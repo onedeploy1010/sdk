@@ -1,7 +1,11 @@
 {
   "name": "@one_deploy/sdk",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "ONE Ecosystem SDK - Shared services, types, utilities, and React providers",
+  "files": [
+    "dist",
+    "src"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
