@@ -81,14 +81,22 @@ export const OneForexConsoleView: React.FC<OneForexConsoleViewProps> = ({
   );
 };
 
+// Terminal palette – always dark regardless of app theme
+const T = {
+  base: '#0A0A0C',
+  border: '#2A2A35',
+  muted: '#555560',
+  secondary: '#9CA3AF',
+};
+
 const styles = StyleSheet.create({
-  container: { backgroundColor: '#0a0a0a', borderRadius: 8, borderWidth: 1, borderColor: '#1a1a1a', overflow: 'hidden' },
+  container: { backgroundColor: T.base, borderRadius: 8, borderWidth: 1, borderColor: T.border, overflow: 'hidden' },
   scroll: { flex: 1 },
   scrollContent: { padding: 8 },
   logRow: { flexDirection: 'row', paddingVertical: 3 },
-  timestamp: { fontFamily: MONO, fontSize: 10, color: '#444', width: 60, marginRight: 6 },
+  timestamp: { fontFamily: MONO, fontSize: 10, color: T.muted, width: 60, marginRight: 6 },
   type: { fontFamily: MONO, fontSize: 10, fontWeight: '700', width: 65, marginRight: 6 },
-  message: { fontFamily: MONO, fontSize: 10, color: '#9ca3af', flex: 1 },
+  message: { fontFamily: MONO, fontSize: 10, color: T.secondary, flex: 1 },
   messageHigh: { color: '#ffffff', fontWeight: '600' },
-  emptyText: { fontFamily: MONO, fontSize: 11, color: '#444', textAlign: 'center', paddingVertical: 40 },
+  emptyText: { fontFamily: MONO, fontSize: 11, color: T.muted, textAlign: 'center', paddingVertical: 40 },
 });
