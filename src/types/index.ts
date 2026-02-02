@@ -885,3 +885,9 @@ export interface RateLimitInfo {
   windowStart: string;
   windowEnd: string;
 }
+
+// ===== StableFX Forex Types =====
+export * from './forex';
+
+// ===== AI Trading Extended Types =====
+export * from './aiTrading';

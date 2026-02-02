@@ -20,3 +20,20 @@ export {
   type UseAIMarketDataResult,
   type UseAITradingResult,
 } from './useAITrading';
+
+// Forex Trading Hooks
+export {
+  useForexPools,
+  useForexInvestments,
+  useForexSimulation,
+  useForexPoolData,
+  useForexTrading,
+  setForexAccessToken,
+  clearForexAccessToken,
+  setForexEngineUrl,
+  type UseForexPoolsResult,
+  type UseForexInvestmentsResult,
+  type UseForexSimulationResult,
+  type UseForexPoolDataResult,
+  type UseForexTradingResult,
+} from './useForexTrading';

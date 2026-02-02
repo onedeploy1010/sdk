@@ -90,6 +90,47 @@ export {
 } from './components/ai/OnePairSelector';
 export type { OnePairSelectorProps } from './components/ai/OnePairSelector';
 
+// ===== StableFX Forex Components =====
+export { OneForexPoolCard } from './components/ai/OneForexPoolCard';
+export type { OneForexPoolCardProps } from './components/ai/OneForexPoolCard';
+
+export { OneForexCapitalSplit } from './components/ai/OneForexCapitalSplit';
+export type { OneForexCapitalSplitProps } from './components/ai/OneForexCapitalSplit';
+
+export { OneForexConsoleView } from './components/ai/OneForexConsoleView';
+export type { OneForexConsoleViewProps } from './components/ai/OneForexConsoleView';
+
+export { OneForexPairSelector } from './components/ai/OneForexPairSelector';
+export type { OneForexPairSelectorProps } from './components/ai/OneForexPairSelector';
+
+export { OneForexTradeHistory } from './components/ai/OneForexTradeHistory';
+export type { OneForexTradeHistoryProps } from './components/ai/OneForexTradeHistory';
+
+// ===== Forex Hooks =====
+export {
+  useForexPools,
+  useForexInvestments,
+  useForexSimulation,
+  useForexPoolData,
+  useForexTrading,
+  setForexAccessToken,
+  clearForexAccessToken,
+  setForexEngineUrl,
+} from './hooks/useForexTrading';
+
+export type {
+  UseForexPoolsResult,
+  UseForexInvestmentsResult,
+  UseForexSimulationResult,
+  UseForexPoolDataResult,
+  UseForexTradingResult,
+} from './hooks/useForexTrading';
+
+// ===== Forex Services =====
+export { forexSimulationEngine } from './services/forex/ForexSimulationEngine';
+export { ForexPoolDataGenerator } from './services/forex/ForexPoolDataGenerator';
+export { botSimulationEngine } from './services/forex/BotSimulationEngine';
+
 // ===== React Native Specific Utilities =====
 
 /**

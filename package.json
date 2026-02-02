@@ -1,6 +1,6 @@
 {
   "name": "@one_deploy/sdk",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "ONE Ecosystem SDK - Shared services, types, utilities, and React providers",
   "files": [
     "dist",
@@ -72,6 +72,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.0",
+    "@types/react-native": "^0.72.8",
     "thirdweb": "^5.116.1",
     "tsup": "^8.3.0",
     "typescript": "^5.6.0"
@@ -92,6 +93,9 @@
       "optional": true
     }
   },
+  "overrides": {
+    "@types/react": "^18.3.0"
+  },
   "keywords": [
     "one-ecosystem",
     "web3",
@@ -99,7 +103,10 @@
     "thirdweb",
     "supabase",
     "onramp",
-    "swap"
+    "swap",
+    "forex",
+    "stablefx",
+    "ai-trading"
   ],
   "license": "MIT"
 }

@@ -9,6 +9,7 @@ export default defineConfig({
     'config/index': 'src/config/index.ts',
     'providers/index': 'src/providers/index.ts',
     'hooks/index': 'src/hooks/index.ts',
+    'components/index': 'src/components/index.ts',
     'react-native': 'src/react-native.ts',
   },
   format: ['cjs', 'esm'],

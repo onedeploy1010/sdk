@@ -36,6 +36,14 @@ export {
   // Price (for offline/cache)
   PriceService,
   priceService,
+  // Usage Tracking
+  UsageService,
+  getUsageService,
+  createUsageService,
+  // Forex Services
+  forexSimulationEngine,
+  ForexPoolDataGenerator,
+  botSimulationEngine,
 } from './services';
 
 // Export all Engine types
@@ -56,6 +64,20 @@ export type {
   SwapQuote,
   SwapExecuteRequest,
   SwapResult,
+  // Usage
+  UsageCategory,
+  DisplayCategory,
+  UsageRecord,
+  UsageSummary,
+  UsageActivity,
+  UsageResponse,
+  // Forex Services
+  PairState,
+  BotLogType,
+  BotLogEntry,
+  IndicatorSnapshot,
+  BotState,
+  StrategyPersonality,
 } from './services';
 
 // ===== React Providers & Hooks =====
@@ -125,6 +147,17 @@ export {
   OneNFTGallery,
   // Receive Widget
   OneReceiveWidget,
+  // AI Trading Components
+  OneChainSelector,
+  OneTierSelector,
+  OneCycleSelector,
+  OnePairSelector,
+  // StableFX Forex Components
+  OneForexPoolCard,
+  OneForexCapitalSplit,
+  OneForexConsoleView,
+  OneForexPairSelector,
+  OneForexTradeHistory,
 } from './components';
 
 export type {
@@ -150,6 +183,17 @@ export type {
   OneNFTGalleryProps,
   NFTItem,
   OneReceiveWidgetProps,
+  // AI Trading Component Types
+  OneChainSelectorProps,
+  OneTierSelectorProps,
+  OneCycleSelectorProps,
+  OnePairSelectorProps,
+  // Forex Component Types
+  OneForexPoolCardProps,
+  OneForexCapitalSplitProps,
+  OneForexConsoleViewProps,
+  OneForexPairSelectorProps,
+  OneForexTradeHistoryProps,
 } from './components';
 
 // ===== Standalone Hooks (for use outside OneProvider) =====
@@ -166,6 +210,15 @@ export {
   useAITrading,
   setAITradingAccessToken,
   clearAITradingAccessToken,
+  // Forex Trading Hooks
+  useForexPools,
+  useForexInvestments,
+  useForexSimulation,
+  useForexPoolData,
+  useForexTrading,
+  setForexAccessToken,
+  clearForexAccessToken,
+  setForexEngineUrl,
 } from './hooks';
 
 export type {
@@ -177,6 +230,12 @@ export type {
   UseAIPortfolioResult,
   UseAIMarketDataResult,
   UseAITradingResult,
+  // Forex Hook Types
+  UseForexPoolsResult,
+  UseForexInvestmentsResult,
+  UseForexSimulationResult,
+  UseForexPoolDataResult,
+  UseForexTradingResult,
 } from './hooks';
 
 // ===== Utilities =====

@@ -44,3 +44,18 @@ export type {
   UsageActivity,
   UsageResponse,
 } from './usage';
+
+// ===== Forex Trading Services =====
+export {
+  forexSimulationEngine,
+  ForexPoolDataGenerator,
+  botSimulationEngine,
+} from './forex';
+export type {
+  PairState,
+  BotLogType,
+  BotLogEntry,
+  IndicatorSnapshot,
+  BotState,
+  StrategyPersonality,
+} from './forex';
