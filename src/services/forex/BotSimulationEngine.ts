@@ -313,8 +313,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Stable Yield',
     shortName: 'STB',
     color: '#6B7280',
-    scanIntervalMin: 80000,
-    scanIntervalMax: 120000,
+    scanIntervalMin: 120000,
+    scanIntervalMax: 180000,
     tradeFrequency: 0.15,
     positionSizeMin: 5,
     positionSizeMax: 15,
@@ -335,8 +335,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Conservative Shield',
     shortName: 'CON',
     color: '#10B981',
-    scanIntervalMin: 60000,
-    scanIntervalMax: 90000,
+    scanIntervalMin: 90000,
+    scanIntervalMax: 150000,
     tradeFrequency: 0.25,
     positionSizeMin: 10,
     positionSizeMax: 20,
@@ -361,8 +361,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Balanced Alpha',
     shortName: 'BAL',
     color: '#3B82F6',
-    scanIntervalMin: 45000,
-    scanIntervalMax: 70000,
+    scanIntervalMin: 75000,
+    scanIntervalMax: 120000,
     tradeFrequency: 0.4,
     positionSizeMin: 15,
     positionSizeMax: 35,
@@ -383,8 +383,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Smart Rebalance',
     shortName: 'SRB',
     color: '#06B6D4',
-    scanIntervalMin: 50000,
-    scanIntervalMax: 75000,
+    scanIntervalMin: 80000,
+    scanIntervalMax: 130000,
     tradeFrequency: 0.35,
     positionSizeMin: 12,
     positionSizeMax: 30,
@@ -409,8 +409,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Growth Momentum',
     shortName: 'GRO',
     color: '#8B5CF6',
-    scanIntervalMin: 40000,
-    scanIntervalMax: 60000,
+    scanIntervalMin: 70000,
+    scanIntervalMax: 110000,
     tradeFrequency: 0.45,
     positionSizeMin: 20,
     positionSizeMax: 40,
@@ -431,8 +431,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Trend Hunter',
     shortName: 'TRH',
     color: '#EC4899',
-    scanIntervalMin: 38000,
-    scanIntervalMax: 55000,
+    scanIntervalMin: 65000,
+    scanIntervalMax: 100000,
     tradeFrequency: 0.48,
     positionSizeMin: 22,
     positionSizeMax: 42,
@@ -457,8 +457,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Aggressive Momentum',
     shortName: 'AGG',
     color: '#EF4444',
-    scanIntervalMin: 35000,
-    scanIntervalMax: 55000,
+    scanIntervalMin: 60000,
+    scanIntervalMax: 100000,
     tradeFrequency: 0.5,
     positionSizeMin: 25,
     positionSizeMax: 50,
@@ -479,8 +479,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Leverage Maximizer',
     shortName: 'LEV',
     color: '#F97316',
-    scanIntervalMin: 30000,
-    scanIntervalMax: 50000,
+    scanIntervalMin: 55000,
+    scanIntervalMax: 90000,
     tradeFrequency: 0.55,
     positionSizeMin: 30,
     positionSizeMax: 55,
@@ -505,8 +505,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'AI Quant Alpha',
     shortName: 'AQA',
     color: '#A855F7',
-    scanIntervalMin: 42000,
-    scanIntervalMax: 65000,
+    scanIntervalMin: 70000,
+    scanIntervalMax: 110000,
     tradeFrequency: 0.42,
     positionSizeMin: 18,
     positionSizeMax: 38,
@@ -527,8 +527,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Neural Trader',
     shortName: 'NRT',
     color: '#14B8A6',
-    scanIntervalMin: 40000,
-    scanIntervalMax: 62000,
+    scanIntervalMin: 70000,
+    scanIntervalMax: 105000,
     tradeFrequency: 0.44,
     positionSizeMin: 20,
     positionSizeMax: 40,
@@ -549,8 +549,8 @@ export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     name: 'Quantum Edge',
     shortName: 'QTE',
     color: '#6366F1',
-    scanIntervalMin: 35000,
-    scanIntervalMax: 55000,
+    scanIntervalMin: 60000,
+    scanIntervalMax: 100000,
     tradeFrequency: 0.5,
     positionSizeMin: 25,
     positionSizeMax: 50,
@@ -856,7 +856,7 @@ class BotSimulationEngine {
       },
       delay,
     });
-    delay += rand(2000, 3500);  // 2-3.5s after SCAN
+    delay += rand(4000, 6000);  // 4-6s after SCAN (slower)
 
     // 2. THINKING - AI reasoning process (new)
     const thinkingMessages = this.generateThinkingProcess(strategy, pair, price);
@@ -871,7 +871,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(1500, 2500);  // 1.5-2.5s between thoughts
+      delay += rand(3000, 5000);  // 3-5s between thoughts (slower)
     }
 
     // 3. INDICATOR - Always (slower delay)
@@ -906,10 +906,10 @@ class BotSimulationEngine {
       },
       delay,
     });
-    delay += rand(2000, 3500);  // 2-3.5s after INDICATOR
+    delay += rand(4000, 6000);  // 4-6s after INDICATOR (slower)
 
-    // 4. NEWS - 12% chance
-    if (Math.random() < 0.12) {
+    // 4. NEWS - 8% chance (less frequent)
+    if (Math.random() < 0.08) {
       const sentiment = Math.random() > 0.4 ? 'Bullish' : 'Bearish';
       entries.push({
         entry: {
@@ -921,11 +921,11 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(2500, 4000);  // 2.5-4s after NEWS
+      delay += rand(5000, 8000);  // 5-8s after NEWS (slower)
     }
 
-    // 5. ANALYSIS - 40% chance
-    if (Math.random() < 0.4) {
+    // 5. ANALYSIS - 30% chance (less frequent)
+    if (Math.random() < 0.30) {
       const analysis = this.generateAnalysis(strategy, indicators, pair);
       entries.push({
         entry: {
@@ -937,7 +937,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(2500, 4000);  // 2.5-4s after ANALYSIS
+      delay += rand(5000, 8000);  // 5-8s after ANALYSIS (slower)
     }
 
     // 6-10. Signal evaluation and potential trade
@@ -965,7 +965,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(3000, 5000);  // 3-5s after STRATEGY
+      delay += rand(5000, 8000);  // 5-8s after STRATEGY (slower)
 
       // 7. SIGNAL
       entries.push({
@@ -979,7 +979,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(3000, 4500);  // 3-4.5s after SIGNAL
+      delay += rand(5000, 7000);  // 5-7s after SIGNAL (slower)
 
       // 8. DECISION
       const decision = this.makeTradeDecision(strategy, signal, state);
