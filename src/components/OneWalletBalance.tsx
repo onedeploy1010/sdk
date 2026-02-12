@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount, useWalletBalance as useThirdwebBalance } from 'thirdweb/react';
 import type { Chain } from 'thirdweb/chains';
 import { base, ethereum, polygon, arbitrum, optimism } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 

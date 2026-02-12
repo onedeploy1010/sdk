@@ -886,8 +886,108 @@ export interface RateLimitInfo {
   windowEnd: string;
 }
 
+// ===== AI Agent Types =====
+
+export interface AIAgentTier {
+  tier: number;
+  amount: number;
+  label: string;
+  label_zh?: string;
+}
+
+export interface AIAgentCycleParams {
+  cycle: number;
+  lockDays: number;
+  shareRate: number;
+  expectedApy: number;
+  managementFee: number;
+  performanceFee: number;
+}
+
+export interface AIAgent {
+  id: string;
+  name: string;
+  name_zh?: string;
+  description: string;
+  description_zh?: string;
+  category: StrategyCategory;
+  risk_level: 1 | 2 | 3 | 4 | 5;
+  icon: string;
+  color: string;
+  tiers: AIAgentTier[];
+  supported_cycles: number[];
+  default_cycle: number;
+  supported_pairs: string[];
+  supported_chains: string[];
+  is_active: boolean;
+  preview?: {
+    tier: AIAgentTier;
+    cycle: number;
+    lockDays: number;
+    shareRate: number;
+    expectedApy: number;
+    managementFee: number;
+    performanceFee: number;
+  };
+  tierParams?: Array<{
+    tier: number;
+    amount: number;
+    label: string;
+    label_zh?: string;
+    cycles: AIAgentCycleParams[];
+  }>;
+}
+
+export interface AIAgentPerformance {
+  agentId: string;
+  date: string;
+  nav: number;
+  dailyPnl: number;
+  dailyPnlPct: number;
+  cumulativePnl: number;
+  cumulativePnlPct: number;
+  tradesOpened: number;
+  tradesClosed: number;
+  winRate: number;
+  sharpeRatio: number;
+}
+
+export interface AIAgentTrade {
+  id: string;
+  agentId: string;
+  symbol: string;
+  side: 'long' | 'short';
+  entryPrice: number;
+  exitPrice?: number;
+  quantity: number;
+  leverage: number;
+  pnl: number;
+  pnlPct: number;
+  status: 'open' | 'closed';
+  entryReason: string;
+  exitReason?: string;
+  confidence: number;
+  openedAt: string;
+  closedAt?: string;
+}
+
+export interface AIAgentSubscriptionParams {
+  agentId: string;
+  tier: number;
+  cycle: number;
+  amount: number;
+  lockDays: number;
+  shareRate: number;
+  expectedApy: number;
+  managementFee: number;
+  performanceFee: number;
+}
+
 // ===== StableFX Forex Types =====
 export * from './forex';
 
 // ===== AI Trading Extended Types =====
 export * from './aiTrading';
+
+// ===== Trading Console Types =====
+export * from './console';

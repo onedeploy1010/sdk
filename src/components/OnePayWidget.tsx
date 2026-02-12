@@ -3,7 +3,7 @@
 import React from 'react';
 import { PayEmbed, type PayEmbedProps } from 'thirdweb/react';
 import { base, ethereum, polygon, arbitrum } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 
@@ -80,6 +80,15 @@ export function OnePayWidget({
   onCancel,
 }: OnePayWidgetProps) {
   const client = useThirdwebClient();
+
+  // Show loading state if client is not ready
+  if (!client) {
+    return (
+      <div className={className} style={{ ...style, padding: '20px', textAlign: 'center', color: '#9ca3af' }}>
+        Initializing payment...
+      </div>
+    );
+  }
 
   // Build pay options based on mode
   let payOptions: PayEmbedProps['payOptions'];

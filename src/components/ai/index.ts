@@ -22,3 +22,6 @@ export * from './OneForexCapitalSplit';
 export * from './OneForexConsoleView';
 export * from './OneForexPairSelector';
 export * from './OneForexTradeHistory';
+
+// Trading Console Components
+export * from './console';

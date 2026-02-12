@@ -120,7 +120,7 @@ export function OneThirdwebProvider({
     const fetchClientConfig = async () => {
       try {
         const engineUrl = config.engineUrl || DEFAULT_ENGINE_URL;
-        const response = await fetch(`${engineUrl}/v1/config/thirdweb`);
+        const response = await fetch(`${engineUrl}/api/v1/config/thirdweb`);
 
         if (response.ok) {
           const data = await response.json();

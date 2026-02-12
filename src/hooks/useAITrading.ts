@@ -442,3 +442,193 @@ export function useAITrading(): UseAITradingResult {
     error,
   };
 }
+
+// ============================================
+// AI Agents Hooks
+// ============================================
+
+export interface AIAgent {
+  id: string;
+  name: string;
+  name_zh: string;
+  description: string;
+  description_zh: string;
+  category: string;
+  risk_level: number;
+  icon: string;
+  color: string;
+  tiers: Array<{ tier: number; amount: number; label: string; label_zh: string }>;
+  supported_cycles: number[];
+  default_cycle: number;
+  supported_pairs: string[];
+  supported_chains: string[];
+  is_active: boolean;
+  preview?: {
+    tier: { tier: number; amount: number; label: string };
+    cycle: number;
+    dailyLots: number;
+    stabilityScore: number;
+    roiRange: { min: number; max: number; userMin: number; userMax: number };
+    shareRate: number;
+    profitEstimate: { monthlyMin: number; monthlyMax: number; cycleMin: number; cycleMax: number };
+  };
+}
+
+export interface AIAgentParams {
+  dailyLots: number;
+  effectiveCapital: number;
+  stabilityScore: number;
+  roiRange: { min: number; max: number; userMin: number; userMax: number };
+  shareRate: number;
+  profitEstimate: { monthlyMin: number; monthlyMax: number; cycleMin: number; cycleMax: number };
+}
+
+export interface UseAIAgentsResult {
+  agents: AIAgent[];
+  shareRates: Record<number, number>;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+}
+
+/**
+ * Hook to fetch all AI agents with their configurations
+ */
+export function useAIAgents(includeInactive = false): UseAIAgentsResult {
+  const [agents, setAgents] = useState<AIAgent[]>([]);
+  const [shareRates, setShareRates] = useState<Record<number, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAgents = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await getClient().getAgentConfigs({ includeInactive });
+      if (result.success && result.data) {
+        setAgents(result.data.agents || []);
+        setShareRates(result.data.shareRates || {});
+      } else {
+        setError(result.error?.message || 'Failed to fetch agents');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [includeInactive]);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
+
+  return { agents, shareRates, isLoading, error, refresh: fetchAgents };
+}
+
+export interface UseAIAgentResult {
+  agent: AIAgent | null;
+  params: AIAgentParams | null;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  calculateParams: (amount: number, cycleDays: number) => Promise<AIAgentParams | null>;
+}
+
+/**
+ * Hook to fetch a single AI agent with detailed parameters
+ */
+export function useAIAgent(agentId: string | undefined): UseAIAgentResult {
+  const [agent, setAgent] = useState<AIAgent | null>(null);
+  const [params, setParams] = useState<AIAgentParams | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAgent = useCallback(async () => {
+    if (!agentId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await getClient().getAgentConfigs({ agentId });
+      if (result.success && result.data?.agent) {
+        setAgent(result.data.agent);
+      } else {
+        setError(result.error?.message || 'Agent not found');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [agentId]);
+
+  useEffect(() => {
+    fetchAgent();
+  }, [fetchAgent]);
+
+  const calculateParams = useCallback(async (amount: number, cycleDays: number): Promise<AIAgentParams | null> => {
+    if (!agentId) return null;
+
+    try {
+      const result = await getClient().calculateAgentParams({ agentId, amount, cycleDays });
+      if (result.success && result.data) {
+        setParams(result.data);
+        return result.data;
+      }
+      return null;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to calculate params');
+      return null;
+    }
+  }, [agentId]);
+
+  return { agent, params, isLoading, error, refresh: fetchAgent, calculateParams };
+}
+
+export interface UseAIAgentSubscriptionResult {
+  subscribe: (agentId: string, amount: number, cycleDays: number, txHash?: string) => Promise<ApiResponse<{ order: AIOrder }>>;
+  isLoading: boolean;
+  error: string | null;
+}
+
+/**
+ * Hook to subscribe to an AI agent strategy
+ */
+export function useAIAgentSubscription(): UseAIAgentSubscriptionResult {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const subscribe = useCallback(async (
+    agentId: string,
+    amount: number,
+    cycleDays: number,
+    txHash?: string
+  ): Promise<ApiResponse<{ order: AIOrder }>> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Create order for the agent strategy
+      const result = await getClient().createAIOrder({
+        strategyId: agentId,
+        amount,
+        lockPeriodDays: cycleDays,
+        txHashDeposit: txHash,
+      });
+      if (!result.success) {
+        setError(result.error?.message || 'Failed to subscribe');
+      }
+      return result;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Subscription failed';
+      setError(errorMsg);
+      return { success: false, error: { code: 'SUBSCRIPTION_ERROR', message: errorMsg } };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { subscribe, isLoading, error };
+}

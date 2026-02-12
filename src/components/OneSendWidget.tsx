@@ -5,7 +5,7 @@ import { useSendTransaction, useActiveAccount } from 'thirdweb/react';
 import { prepareTransaction, toWei } from 'thirdweb';
 import type { Chain } from 'thirdweb/chains';
 import { base } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 
@@ -105,10 +105,10 @@ export function OneSendWidget({
   const isValidAddress = (address: string) => /^0x[a-fA-F0-9]{40}$/.test(address);
   const isValidAmount = (amt: string) => !isNaN(parseFloat(amt)) && parseFloat(amt) > 0;
 
-  const canSend = isValidAddress(recipient) && isValidAmount(amount) && !isPending;
+  const canSend = !!client && isValidAddress(recipient) && isValidAmount(amount) && !isPending;
 
   const handleSend = useCallback(async () => {
-    if (!account || !canSend) return;
+    if (!account || !canSend || !client) return;
 
     setError(null);
 

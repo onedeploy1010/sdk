@@ -9,18 +9,44 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
+import { createThirdwebClient, type ThirdwebClient } from 'thirdweb';
+import { ThirdwebProvider as BaseThirdwebProvider } from 'thirdweb/react';
+import { inAppWallet, smartWallet } from 'thirdweb/wallets';
+import type { Chain } from 'thirdweb/chains';
+import { base, ethereum, polygon, arbitrum, optimism } from 'thirdweb/chains';
+
 import { initOneSDK, type OneConfig } from '../config';
 import {
   OneEngineClient,
   createOneEngineClient,
-  type EngineAuthResponse,
   type EngineWalletBalance,
-  type OnrampSession,
   type OnrampSessionRequest,
   type SwapQuote,
   type SwapQuoteRequest,
 } from '../services/engine';
 import type { User, Token, AIStrategy, AIOrder } from '../types';
+
+// ===== Thirdweb Config Types =====
+
+export interface ThirdwebAuthOptions {
+  email?: boolean;
+  phone?: boolean;
+  google?: boolean;
+  apple?: boolean;
+  facebook?: boolean;
+  discord?: boolean;
+  passkey?: boolean;
+  guest?: boolean;
+}
+
+export interface ThirdwebWalletConfig {
+  appName?: string;
+  appIcon?: string;
+  defaultChain?: Chain;
+  supportedChains?: Chain[];
+  sponsorGas?: boolean;
+  authOptions?: ThirdwebAuthOptions;
+}
 
 // ===== Context Types =====
 
@@ -36,15 +62,20 @@ interface AuthContextValue {
 }
 
 interface WalletContextValue {
+  // Address management
   address: string | null;
+  setAddress: (address: string | null) => void;
+  // Balance from Engine API
   balance: EngineWalletBalance | null;
   tokens: Token[];
   totalUsd: number;
   isLoading: boolean;
   error: string | null;
-  setAddress: (address: string | null) => void;
   fetchBalance: (chains?: number[]) => Promise<void>;
   refreshBalance: () => Promise<void>;
+  // Thirdweb client for wallet connection
+  thirdwebClient: ThirdwebClient | null;
+  isThirdwebReady: boolean;
 }
 
 interface OnrampContextValue {
@@ -89,14 +120,70 @@ interface OneContextValue {
   onramp: OnrampContextValue;
   swap: SwapContextValue;
   trading: TradingContextValue;
+  // Direct thirdweb access
+  thirdwebClient: ThirdwebClient | null;
 }
 
 const OneContext = createContext<OneContextValue | null>(null);
+
+// ===== Default Thirdweb Configuration =====
+
+const DEFAULT_CHAINS: Chain[] = [base, ethereum, polygon, arbitrum, optimism];
+
+const DEFAULT_AUTH_OPTIONS: ThirdwebAuthOptions = {
+  email: true,
+  phone: false,
+  google: true,
+  apple: true,
+  facebook: false,
+  discord: false,
+  passkey: true,
+  guest: false,
+};
+
+// ===== Create Wallets Configuration =====
+
+function createWalletConfig(config: ThirdwebWalletConfig) {
+  const authOptions = { ...DEFAULT_AUTH_OPTIONS, ...config.authOptions };
+
+  // Build auth options array
+  const authMethods: string[] = [];
+  if (authOptions.google) authMethods.push('google');
+  if (authOptions.apple) authMethods.push('apple');
+  if (authOptions.facebook) authMethods.push('facebook');
+  if (authOptions.discord) authMethods.push('discord');
+  if (authOptions.passkey) authMethods.push('passkey');
+
+  // Create in-app wallet with email and social logins
+  const inApp = inAppWallet({
+    auth: {
+      options: authMethods as any[],
+    },
+    metadata: config.appName ? {
+      name: config.appName,
+      image: config.appIcon ? { src: config.appIcon, width: 100, height: 100 } : undefined,
+    } : undefined,
+  });
+
+  // If gas sponsorship is enabled, wrap in smart wallet
+  if (config.sponsorGas) {
+    const chain = config.defaultChain || base;
+    return [
+      smartWallet({
+        chain,
+        sponsorGas: true,
+      }),
+    ];
+  }
+
+  return [inApp];
+}
 
 // ===== Provider Props =====
 interface OneProviderProps {
   children: ReactNode;
   config: OneConfig;
+  thirdweb?: ThirdwebWalletConfig;
   autoFetchBalance?: boolean;
 }
 
@@ -104,10 +191,10 @@ interface OneProviderProps {
 export function OneProvider({
   children,
   config,
+  thirdweb: thirdwebConfig = {},
   autoFetchBalance = true,
 }: OneProviderProps) {
   // Initialize SDK synchronously before creating engine client
-  // This must happen before useMemo so getConfig() works in the constructor
   useMemo(() => {
     initOneSDK(config);
   }, [config]);
@@ -118,6 +205,67 @@ export function OneProvider({
     clientId: config.oneClientId,
     secretKey: config.oneSecretKey,
   }), [config]);
+
+  // ===== Thirdweb State =====
+  const [thirdwebClientId, setThirdwebClientId] = useState<string | null>(null);
+  const [thirdwebLoading, setThirdwebLoading] = useState(true);
+  const [thirdwebError, setThirdwebError] = useState<string | null>(null);
+
+  // Fetch thirdweb clientId from Engine on mount
+  useEffect(() => {
+    const fetchClientConfig = async () => {
+      try {
+        const response = await fetch(`${config.oneEngineUrl}/api/v1/config/thirdweb`);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.clientId) {
+            setThirdwebClientId(data.data.clientId);
+          } else {
+            // Fallback to environment variable
+            const envClientId = typeof window !== 'undefined'
+              ? (window as any).__NEXT_PUBLIC_THIRDWEB_CLIENT_ID
+              : process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+            if (envClientId) {
+              setThirdwebClientId(envClientId);
+            } else {
+              setThirdwebError('Failed to load wallet configuration');
+            }
+          }
+        } else {
+          // Fallback to environment variable
+          const envClientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+          if (envClientId) {
+            setThirdwebClientId(envClientId);
+          } else {
+            setThirdwebError('Wallet service unavailable');
+          }
+        }
+      } catch (err) {
+        // Fallback to environment variable on network error
+        const envClientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+        if (envClientId) {
+          setThirdwebClientId(envClientId);
+        } else {
+          console.warn('Failed to fetch thirdweb config:', err);
+          // Don't set error - thirdweb is optional
+        }
+      } finally {
+        setThirdwebLoading(false);
+      }
+    };
+
+    fetchClientConfig();
+  }, [config.oneEngineUrl]);
+
+  // Create thirdweb client once we have clientId
+  const thirdwebClient = useMemo(() => {
+    if (!thirdwebClientId) return null;
+    return createThirdwebClient({ clientId: thirdwebClientId });
+  }, [thirdwebClientId]);
+
+  // Create wallet configuration
+  const wallets = useMemo(() => createWalletConfig(thirdwebConfig), [thirdwebConfig]);
 
   // ===== Auth State =====
   const [user, setUser] = useState<User | null>(null);
@@ -315,6 +463,7 @@ export function OneProvider({
     isInitialized,
     config: isInitialized ? config : null,
     engine,
+    thirdwebClient,
 
     auth: {
       user,
@@ -337,6 +486,8 @@ export function OneProvider({
       setAddress: setWalletAddress,
       fetchBalance,
       refreshBalance,
+      thirdwebClient,
+      isThirdwebReady: !thirdwebLoading && !!thirdwebClient,
     },
 
     onramp: {
@@ -369,6 +520,8 @@ export function OneProvider({
     isInitialized,
     config,
     engine,
+    thirdwebClient,
+    thirdwebLoading,
     user,
     authLoading,
     accessToken,
@@ -402,11 +555,23 @@ export function OneProvider({
     createOrder,
   ]);
 
-  return (
+  // Wrap with ThirdwebProvider if client is available
+  const content = (
     <OneContext.Provider value={contextValue}>
       {children}
     </OneContext.Provider>
   );
+
+  // If thirdweb is ready, wrap with ThirdwebProvider
+  if (thirdwebClient) {
+    return (
+      <BaseThirdwebProvider>
+        {content}
+      </BaseThirdwebProvider>
+    );
+  }
+
+  return content;
 }
 
 // ===== Hooks =====
@@ -448,5 +613,16 @@ export function useOneEngine() {
   return engine;
 }
 
+export function useThirdwebClient(): ThirdwebClient | null {
+  const { thirdwebClient } = useOne();
+  return thirdwebClient;
+}
+
 // Export context for advanced usage
 export { OneContext };
+
+// Export thirdweb utilities for convenience
+export { inAppWallet, smartWallet } from 'thirdweb/wallets';
+export { base, ethereum, polygon, arbitrum, optimism } from 'thirdweb/chains';
+export type { Chain } from 'thirdweb/chains';
+export type { ThirdwebClient } from 'thirdweb';

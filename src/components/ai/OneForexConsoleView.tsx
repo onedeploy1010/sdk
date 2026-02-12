@@ -5,22 +5,10 @@
 
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ViewStyle, Platform } from 'react-native';
-import type { ForexLogEntry, ForexLogType } from '../../types/forex';
+import type { ForexLogEntry } from '../../types/forex';
+import { FOREX_LOG_COLORS } from '../../types/console';
 
 const MONO = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
-
-const TYPE_COLORS: Record<ForexLogType, string> = {
-  RFQ: '#06B6D4',
-  QUOTE: '#8B5CF6',
-  MATCH: '#10B981',
-  SETTLE: '#F59E0B',
-  PVP: '#3B82F6',
-  HEDGE: '#EC4899',
-  CLEAR: '#14B8A6',
-  POSITION: '#6366F1',
-  PNL: '#22C55E',
-  SYSTEM: '#9CA3AF',
-};
 
 export interface OneForexConsoleViewProps {
   /** Array of log entries to display */
@@ -62,7 +50,7 @@ export const OneForexConsoleView: React.FC<OneForexConsoleViewProps> = ({
         {visibleLogs.map((log) => (
           <View key={log.id} style={styles.logRow}>
             <Text style={styles.timestamp}>{formatTime(log.timestamp)}</Text>
-            <Text style={[styles.type, { color: TYPE_COLORS[log.type] || '#9CA3AF' }]}>
+            <Text style={[styles.type, { color: FOREX_LOG_COLORS[log.type] || '#9CA3AF' }]}>
               {log.type.padEnd(8)}
             </Text>
             <Text style={[

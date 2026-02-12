@@ -4,7 +4,7 @@ import React from 'react';
 import { ConnectButton, type ConnectButtonProps } from 'thirdweb/react';
 import { inAppWallet, smartWallet } from 'thirdweb/wallets';
 import { base } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 
@@ -76,6 +76,29 @@ export function OneConnectButton({
   accountAbstraction,
 }: OneConnectButtonProps) {
   const client = useThirdwebClient();
+
+  // Show loading state if client is not ready
+  if (!client) {
+    return (
+      <button
+        disabled
+        className={className}
+        style={{
+          backgroundColor: ONE_THEME.colors.primaryButtonBg,
+          color: ONE_THEME.colors.primaryButtonText,
+          fontFamily: ONE_THEME.fontFamily,
+          fontWeight: 600,
+          borderRadius: '12px',
+          padding: '12px 24px',
+          opacity: 0.5,
+          cursor: 'not-allowed',
+          ...style,
+        }}
+      >
+        Initializing...
+      </button>
+    );
+  }
 
   // Build auth methods
   const authMethods: string[] = ['email'];

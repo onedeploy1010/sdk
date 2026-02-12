@@ -64,7 +64,7 @@ interface OpenPosition {
   pnlPercent: number;
 }
 
-interface StrategyPersonality {
+export interface StrategyPersonality {
   id: string;
   name: string;
   shortName: string;
@@ -80,20 +80,289 @@ interface StrategyPersonality {
   riskTolerance: 'low' | 'medium' | 'high';
   preferredPairs: string[];
   rsiBias: number;
+  // Yield configuration
+  tier: InvestmentTier;
+  dailyYieldMin: number;  // Min daily interest rate (%)
+  dailyYieldMax: number;  // Max daily interest rate (%)
+  description: string;
+  category: StrategyCategory;
+}
+
+export type StrategyCategory =
+  | 'conservative'    // 保守型 - 稳健收益
+  | 'balanced'        // 平衡型 - 风险收益均衡
+  | 'growth'          // 成长型 - 较高收益
+  | 'aggressive'      // 激进型 - 高风险高收益
+  | 'quantitative';   // 量化型 - AI驱动
+
+export type InvestmentTier = 'starter' | 'basic' | 'standard' | 'premium' | 'elite' | 'vip';
+
+// ── Investment Tier Configuration ─────────────────────────────────────────────
+
+export interface TierConfig {
+  id: InvestmentTier;
+  name: string;
+  nameCn: string;
+  minInvestment: number;
+  maxInvestment: number;
+  color: string;
+  icon: string;
+}
+
+export const INVESTMENT_TIERS: Record<InvestmentTier, TierConfig> = {
+  starter: {
+    id: 'starter',
+    name: 'Starter',
+    nameCn: '入门版',
+    minInvestment: 100,
+    maxInvestment: 999,
+    color: '#6B7280',
+    icon: '🌱',
+  },
+  basic: {
+    id: 'basic',
+    name: 'Basic',
+    nameCn: '基础版',
+    minInvestment: 1000,
+    maxInvestment: 4999,
+    color: '#3B82F6',
+    icon: '📊',
+  },
+  standard: {
+    id: 'standard',
+    name: 'Standard',
+    nameCn: '标准版',
+    minInvestment: 5000,
+    maxInvestment: 19999,
+    color: '#10B981',
+    icon: '💎',
+  },
+  premium: {
+    id: 'premium',
+    name: 'Premium',
+    nameCn: '高级版',
+    minInvestment: 20000,
+    maxInvestment: 49999,
+    color: '#8B5CF6',
+    icon: '👑',
+  },
+  elite: {
+    id: 'elite',
+    name: 'Elite',
+    nameCn: '精英版',
+    minInvestment: 50000,
+    maxInvestment: 99999,
+    color: '#F59E0B',
+    icon: '🏆',
+  },
+  vip: {
+    id: 'vip',
+    name: 'VIP',
+    nameCn: 'VIP专属',
+    minInvestment: 100000,
+    maxInvestment: Infinity,
+    color: '#EF4444',
+    icon: '🔥',
+  },
+};
+
+// ── Investment Cycle Configuration ────────────────────────────────────────────
+
+export interface CycleConfig {
+  id: string;
+  days: number;
+  name: string;
+  nameCn: string;
+  profitSharePercent: number;  // Platform takes this %, user gets (100 - this)%
+  bonusMultiplier: number;     // Bonus yield multiplier for longer cycles
+  earlyWithdrawPenalty: number; // Penalty % for early withdrawal
+}
+
+export const INVESTMENT_CYCLES: CycleConfig[] = [
+  {
+    id: 'flexible',
+    days: 0,
+    name: 'Flexible',
+    nameCn: '灵活期',
+    profitSharePercent: 30,    // Platform 30%, User 70%
+    bonusMultiplier: 1.0,
+    earlyWithdrawPenalty: 0,
+  },
+  {
+    id: 'week',
+    days: 7,
+    name: '7 Days',
+    nameCn: '7天期',
+    profitSharePercent: 25,    // Platform 25%, User 75%
+    bonusMultiplier: 1.1,
+    earlyWithdrawPenalty: 5,
+  },
+  {
+    id: 'biweek',
+    days: 14,
+    name: '14 Days',
+    nameCn: '14天期',
+    profitSharePercent: 22,    // Platform 22%, User 78%
+    bonusMultiplier: 1.2,
+    earlyWithdrawPenalty: 8,
+  },
+  {
+    id: 'month',
+    days: 30,
+    name: '30 Days',
+    nameCn: '30天期',
+    profitSharePercent: 20,    // Platform 20%, User 80%
+    bonusMultiplier: 1.35,
+    earlyWithdrawPenalty: 10,
+  },
+  {
+    id: 'quarter',
+    days: 90,
+    name: '90 Days',
+    nameCn: '90天期',
+    profitSharePercent: 15,    // Platform 15%, User 85%
+    bonusMultiplier: 1.5,
+    earlyWithdrawPenalty: 15,
+  },
+  {
+    id: 'halfyear',
+    days: 180,
+    name: '180 Days',
+    nameCn: '180天期',
+    profitSharePercent: 12,    // Platform 12%, User 88%
+    bonusMultiplier: 1.8,
+    earlyWithdrawPenalty: 20,
+  },
+  {
+    id: 'year',
+    days: 365,
+    name: '365 Days',
+    nameCn: '365天期',
+    profitSharePercent: 10,    // Platform 10%, User 90%
+    bonusMultiplier: 2.0,
+    earlyWithdrawPenalty: 25,
+  },
+];
+
+// ── Yield Calculator ──────────────────────────────────────────────────────────
+
+export function calculateDailyYield(
+  strategy: StrategyPersonality,
+  tier: InvestmentTier,
+  cycle: CycleConfig
+): { grossYield: number; netYield: number; platformFee: number } {
+  // Base yield from strategy
+  const baseYield = (strategy.dailyYieldMin + strategy.dailyYieldMax) / 2;
+
+  // Tier bonus (higher tiers get slightly better rates)
+  const tierBonuses: Record<InvestmentTier, number> = {
+    starter: 0,
+    basic: 0.02,
+    standard: 0.05,
+    premium: 0.08,
+    elite: 0.12,
+    vip: 0.15,
+  };
+
+  // Calculate gross yield with bonuses
+  const grossYield = baseYield * cycle.bonusMultiplier * (1 + tierBonuses[tier]);
+
+  // Calculate platform fee and net yield
+  const platformFee = grossYield * (cycle.profitSharePercent / 100);
+  const netYield = grossYield - platformFee;
+
+  return { grossYield, netYield, platformFee };
+}
+
+export function estimateReturns(
+  principal: number,
+  strategy: StrategyPersonality,
+  tier: InvestmentTier,
+  cycle: CycleConfig
+): {
+  dailyReturn: number;
+  totalReturn: number;
+  finalAmount: number;
+  platformProfit: number;
+  userProfit: number;
+  apr: number;
+} {
+  const { netYield, platformFee } = calculateDailyYield(strategy, tier, cycle);
+  const days = cycle.days || 30; // Default to 30 days for flexible
+
+  const dailyReturn = principal * (netYield / 100);
+  const totalReturn = dailyReturn * days;
+  const finalAmount = principal + totalReturn;
+  const platformProfit = principal * (platformFee / 100) * days;
+  const userProfit = totalReturn;
+  const apr = netYield * 365;
+
+  return { dailyReturn, totalReturn, finalAmount, platformProfit, userProfit, apr };
 }
 
 type LogCallback = (entry: BotLogEntry) => void;
 
 // ── Strategy Personalities ─────────────────────────────────────────────────────
 
-const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
+export const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONSERVATIVE STRATEGIES (保守型) - Low risk, stable returns
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    id: 'balanced-01',
+    id: 'stable-yield-01',
+    name: 'Stable Yield',
+    shortName: 'STB',
+    color: '#6B7280',
+    scanIntervalMin: 80000,
+    scanIntervalMax: 120000,
+    tradeFrequency: 0.15,
+    positionSizeMin: 5,
+    positionSizeMax: 15,
+    leverageMin: 1,
+    leverageMax: 3,
+    primaryIndicators: ['Bollinger', 'Volume'],
+    riskTolerance: 'low',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT'],
+    rsiBias: 45,
+    tier: 'starter',
+    dailyYieldMin: 0.15,
+    dailyYieldMax: 0.25,
+    description: '稳健收益策略，低风险低波动，适合新手入门',
+    category: 'conservative',
+  },
+  {
+    id: 'conservative-shield-01',
+    name: 'Conservative Shield',
+    shortName: 'CON',
+    color: '#10B981',
+    scanIntervalMin: 60000,
+    scanIntervalMax: 90000,
+    tradeFrequency: 0.25,
+    positionSizeMin: 10,
+    positionSizeMax: 20,
+    leverageMin: 2,
+    leverageMax: 5,
+    primaryIndicators: ['Bollinger', 'Volume', 'RSI'],
+    riskTolerance: 'low',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT'],
+    rsiBias: 45,
+    tier: 'basic',
+    dailyYieldMin: 0.25,
+    dailyYieldMax: 0.40,
+    description: '保守防御策略，注重资金安全，稳定收益',
+    category: 'conservative',
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BALANCED STRATEGIES (平衡型) - Moderate risk, balanced returns
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'balanced-alpha-01',
     name: 'Balanced Alpha',
     shortName: 'BAL',
     color: '#3B82F6',
-    scanIntervalMin: 25000,  // Slower: 25-40s between cycles
-    scanIntervalMax: 40000,
+    scanIntervalMin: 45000,
+    scanIntervalMax: 70000,
     tradeFrequency: 0.4,
     positionSizeMin: 15,
     positionSizeMax: 35,
@@ -103,31 +372,93 @@ const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     riskTolerance: 'medium',
     preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'],
     rsiBias: 50,
+    tier: 'standard',
+    dailyYieldMin: 0.40,
+    dailyYieldMax: 0.65,
+    description: '平衡型策略，风险收益均衡，适合稳健投资者',
+    category: 'balanced',
   },
   {
-    id: 'conservative-01',
-    name: 'Conservative Shield',
-    shortName: 'CON',
-    color: '#10B981',
-    scanIntervalMin: 35000,  // Slower: 35-55s between cycles
+    id: 'smart-rebalance-01',
+    name: 'Smart Rebalance',
+    shortName: 'SRB',
+    color: '#06B6D4',
+    scanIntervalMin: 50000,
+    scanIntervalMax: 75000,
+    tradeFrequency: 0.35,
+    positionSizeMin: 12,
+    positionSizeMax: 30,
+    leverageMin: 3,
+    leverageMax: 8,
+    primaryIndicators: ['RSI', 'EMA', 'Volume'],
+    riskTolerance: 'medium',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT'],
+    rsiBias: 50,
+    tier: 'standard',
+    dailyYieldMin: 0.45,
+    dailyYieldMax: 0.70,
+    description: '智能再平衡策略，动态调整持仓，优化收益',
+    category: 'balanced',
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GROWTH STRATEGIES (成长型) - Higher risk, higher returns
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'growth-momentum-01',
+    name: 'Growth Momentum',
+    shortName: 'GRO',
+    color: '#8B5CF6',
+    scanIntervalMin: 40000,
+    scanIntervalMax: 60000,
+    tradeFrequency: 0.45,
+    positionSizeMin: 20,
+    positionSizeMax: 40,
+    leverageMin: 5,
+    leverageMax: 12,
+    primaryIndicators: ['RSI', 'MACD', 'EMA'],
+    riskTolerance: 'medium',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'AVAX/USDT'],
+    rsiBias: 52,
+    tier: 'premium',
+    dailyYieldMin: 0.60,
+    dailyYieldMax: 0.95,
+    description: '成长动量策略，追求较高收益，适合有经验投资者',
+    category: 'growth',
+  },
+  {
+    id: 'trend-hunter-01',
+    name: 'Trend Hunter',
+    shortName: 'TRH',
+    color: '#EC4899',
+    scanIntervalMin: 38000,
     scanIntervalMax: 55000,
-    tradeFrequency: 0.25,
-    positionSizeMin: 10,
-    positionSizeMax: 20,
-    leverageMin: 2,
-    leverageMax: 5,
-    primaryIndicators: ['Bollinger', 'Volume'],
-    riskTolerance: 'low',
-    preferredPairs: ['BTC/USDT', 'ETH/USDT'],
-    rsiBias: 45,
+    tradeFrequency: 0.48,
+    positionSizeMin: 22,
+    positionSizeMax: 42,
+    leverageMin: 5,
+    leverageMax: 15,
+    primaryIndicators: ['EMA', 'MACD', 'Volume', 'Bollinger'],
+    riskTolerance: 'medium',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'ARB/USDT', 'OP/USDT'],
+    rsiBias: 53,
+    tier: 'premium',
+    dailyYieldMin: 0.65,
+    dailyYieldMax: 1.00,
+    description: '趋势猎手策略，捕捉市场趋势，追求超额收益',
+    category: 'growth',
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AGGRESSIVE STRATEGIES (激进型) - High risk, high returns
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    id: 'aggressive-01',
+    id: 'aggressive-momentum-01',
     name: 'Aggressive Momentum',
     shortName: 'AGG',
     color: '#EF4444',
-    scanIntervalMin: 18000,  // Slower: 18-30s between cycles
-    scanIntervalMax: 30000,
+    scanIntervalMin: 35000,
+    scanIntervalMax: 55000,
     tradeFrequency: 0.5,
     positionSizeMin: 25,
     positionSizeMax: 50,
@@ -137,6 +468,103 @@ const STRATEGY_PERSONALITIES: StrategyPersonality[] = [
     riskTolerance: 'high',
     preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'DOGE/USDT', 'AVAX/USDT'],
     rsiBias: 55,
+    tier: 'elite',
+    dailyYieldMin: 0.85,
+    dailyYieldMax: 1.40,
+    description: '激进动量策略，高风险高收益，适合风险承受能力强的投资者',
+    category: 'aggressive',
+  },
+  {
+    id: 'leverage-maximizer-01',
+    name: 'Leverage Maximizer',
+    shortName: 'LEV',
+    color: '#F97316',
+    scanIntervalMin: 30000,
+    scanIntervalMax: 50000,
+    tradeFrequency: 0.55,
+    positionSizeMin: 30,
+    positionSizeMax: 55,
+    leverageMin: 10,
+    leverageMax: 25,
+    primaryIndicators: ['RSI', 'MACD', 'EMA', 'Volume', 'Bollinger'],
+    riskTolerance: 'high',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'DOGE/USDT', 'AVAX/USDT', 'ARB/USDT'],
+    rsiBias: 55,
+    tier: 'elite',
+    dailyYieldMin: 1.00,
+    dailyYieldMax: 1.80,
+    description: '杠杆最大化策略，追求极致收益，需要专业投资经验',
+    category: 'aggressive',
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // QUANTITATIVE STRATEGIES (量化型) - AI-driven, advanced algorithms
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ai-quant-alpha-01',
+    name: 'AI Quant Alpha',
+    shortName: 'AQA',
+    color: '#A855F7',
+    scanIntervalMin: 42000,
+    scanIntervalMax: 65000,
+    tradeFrequency: 0.42,
+    positionSizeMin: 18,
+    positionSizeMax: 38,
+    leverageMin: 4,
+    leverageMax: 12,
+    primaryIndicators: ['RSI', 'MACD', 'EMA', 'Volume', 'Bollinger'],
+    riskTolerance: 'medium',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT'],
+    rsiBias: 51,
+    tier: 'premium',
+    dailyYieldMin: 0.70,
+    dailyYieldMax: 1.10,
+    description: 'AI量化Alpha策略，机器学习驱动，智能风控',
+    category: 'quantitative',
+  },
+  {
+    id: 'neural-trader-01',
+    name: 'Neural Trader',
+    shortName: 'NRT',
+    color: '#14B8A6',
+    scanIntervalMin: 40000,
+    scanIntervalMax: 62000,
+    tradeFrequency: 0.44,
+    positionSizeMin: 20,
+    positionSizeMax: 40,
+    leverageMin: 5,
+    leverageMax: 15,
+    primaryIndicators: ['RSI', 'MACD', 'EMA', 'Volume', 'Bollinger'],
+    riskTolerance: 'medium',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'AVAX/USDT', 'LINK/USDT'],
+    rsiBias: 52,
+    tier: 'elite',
+    dailyYieldMin: 0.80,
+    dailyYieldMax: 1.25,
+    description: '神经网络交易策略，深度学习模型，自适应市场',
+    category: 'quantitative',
+  },
+  {
+    id: 'quantum-edge-01',
+    name: 'Quantum Edge',
+    shortName: 'QTE',
+    color: '#6366F1',
+    scanIntervalMin: 35000,
+    scanIntervalMax: 55000,
+    tradeFrequency: 0.5,
+    positionSizeMin: 25,
+    positionSizeMax: 50,
+    leverageMin: 8,
+    leverageMax: 20,
+    primaryIndicators: ['RSI', 'MACD', 'EMA', 'Volume', 'Bollinger'],
+    riskTolerance: 'high',
+    preferredPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'AVAX/USDT', 'ARB/USDT', 'OP/USDT'],
+    rsiBias: 54,
+    tier: 'vip',
+    dailyYieldMin: 1.20,
+    dailyYieldMax: 2.00,
+    description: 'VIP量子优势策略，顶级AI算法，极致收益追求',
+    category: 'quantitative',
   },
 ];
 
@@ -428,7 +856,7 @@ class BotSimulationEngine {
       },
       delay,
     });
-    delay += rand(800, 1500);  // Slower: 0.8-1.5s
+    delay += rand(2000, 3500);  // 2-3.5s after SCAN
 
     // 2. THINKING - AI reasoning process (new)
     const thinkingMessages = this.generateThinkingProcess(strategy, pair, price);
@@ -443,7 +871,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(600, 1200);  // 0.6-1.2s between thoughts
+      delay += rand(1500, 2500);  // 1.5-2.5s between thoughts
     }
 
     // 3. INDICATOR - Always (slower delay)
@@ -478,9 +906,9 @@ class BotSimulationEngine {
       },
       delay,
     });
-    delay += rand(800, 1500);  // Slower: 0.8-1.5s
+    delay += rand(2000, 3500);  // 2-3.5s after INDICATOR
 
-    // 4. NEWS - 12% chance (slower)
+    // 4. NEWS - 12% chance
     if (Math.random() < 0.12) {
       const sentiment = Math.random() > 0.4 ? 'Bullish' : 'Bearish';
       entries.push({
@@ -493,10 +921,10 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(1000, 1800);  // Slower: 1-1.8s
+      delay += rand(2500, 4000);  // 2.5-4s after NEWS
     }
 
-    // 5. ANALYSIS - 40% chance (slower)
+    // 5. ANALYSIS - 40% chance
     if (Math.random() < 0.4) {
       const analysis = this.generateAnalysis(strategy, indicators, pair);
       entries.push({
@@ -509,7 +937,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(1000, 2000);  // Slower: 1-2s
+      delay += rand(2500, 4000);  // 2.5-4s after ANALYSIS
     }
 
     // 6-10. Signal evaluation and potential trade
@@ -537,7 +965,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(1500, 2500);  // Slower: 1.5-2.5s
+      delay += rand(3000, 5000);  // 3-5s after STRATEGY
 
       // 7. SIGNAL
       entries.push({
@@ -551,7 +979,7 @@ class BotSimulationEngine {
         },
         delay,
       });
-      delay += rand(1200, 2000);  // Slower: 1.2-2s
+      delay += rand(3000, 4500);  // 3-4.5s after SIGNAL
 
       // 8. DECISION
       const decision = this.makeTradeDecision(strategy, signal, state);
@@ -573,7 +1001,7 @@ class BotSimulationEngine {
           },
           delay,
         });
-        delay += rand(1000, 1800);  // Slower: 1-1.8s
+        delay += rand(2500, 4000);  // 2.5-4s after DECISION
 
         // 9. ORDER
         const orderId = `ORD_${Date.now().toString(36).toUpperCase()}`;
@@ -603,7 +1031,7 @@ class BotSimulationEngine {
           },
           delay,
         });
-        delay += rand(2000, 4000);  // Slower: 2-4s for order execution
+        delay += rand(4000, 7000);  // 4-7s for order execution
 
         // 10. FILLED
         const fillPrice = orderPrice * (1 + rand(-0.0003, 0.0003));
@@ -656,9 +1084,9 @@ class BotSimulationEngine {
       }
     }
 
-    // 11. PNL - Update open positions (slower)
+    // 11. PNL - Update open positions
     if (state.openPositions.length > 0 && Math.random() < 0.5) {
-      delay += rand(1500, 2500);  // Slower: 1.5-2.5s
+      delay += rand(3500, 5500);  // 3.5-5.5s before PNL
       let totalPositionPnl = 0;
       const pnlParts: string[] = [];
 
@@ -701,9 +1129,9 @@ class BotSimulationEngine {
       });
     }
 
-    // 12. RISK - Periodic check (slower)
+    // 12. RISK - Periodic check
     if (Math.random() < 0.2) {
-      delay += rand(1000, 2000);  // Slower: 1-2s
+      delay += rand(3000, 5000);  // 3-5s before RISK
       const exposure = state.openPositions.reduce((sum, p) => sum + p.size * p.leverage, 0);
       const maxDrawdown = rand(2, 12);
       entries.push({
@@ -966,5 +1394,3 @@ class BotSimulationEngine {
 // ── Singleton Export ────────────────────────────────────────────────────────────
 
 export const botSimulationEngine = new BotSimulationEngine();
-export { STRATEGY_PERSONALITIES, CHAIN_INFO, PAIR_PRICES };
-export type { StrategyPersonality };

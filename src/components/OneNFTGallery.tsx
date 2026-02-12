@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { MediaRenderer } from 'thirdweb/react';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 
@@ -185,12 +185,14 @@ export function OneNFTGallery({
             }}
           >
             <div style={{ ...imageContainerStyle, backgroundColor: isDark ? '#374151' : '#f3f4f6' }}>
-              {nft.image ? (
+              {nft.image && client ? (
                 <MediaRenderer
                   client={client}
                   src={nft.image}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
+              ) : nft.image ? (
+                <img src={nft.image} alt={nft.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <span style={{ color: isDark ? '#6b7280' : '#9ca3af', fontSize: '14px' }}>No Image</span>
               )}
@@ -249,11 +251,15 @@ export function OneNFTGallery({
             onClick={(e) => e.stopPropagation()}
           >
             {selectedNFT.image && (
-              <MediaRenderer
-                client={client}
-                src={selectedNFT.image}
-                style={{ width: '100%', borderRadius: '12px', marginBottom: '16px' }}
-              />
+              client ? (
+                <MediaRenderer
+                  client={client}
+                  src={selectedNFT.image}
+                  style={{ width: '100%', borderRadius: '12px', marginBottom: '16px' }}
+                />
+              ) : (
+                <img src={selectedNFT.image} alt={selectedNFT.name} style={{ width: '100%', borderRadius: '12px', marginBottom: '16px' }} />
+              )
             )}
             <h3 style={{ margin: '0 0 8px 0', color: isDark ? '#ffffff' : '#111827' }}>
               {selectedNFT.name || `#${selectedNFT.tokenId}`}

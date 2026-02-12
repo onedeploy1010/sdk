@@ -82,7 +82,7 @@ export type {
 
 // ===== React Providers & Hooks =====
 export {
-  // Original ONE Provider (API-based)
+  // Unified ONE Provider (with integrated thirdweb wallet support)
   OneProvider,
   useOne,
   useOneAuth,
@@ -91,10 +91,9 @@ export {
   useOneSwap,
   useOneTrading,
   useOneEngine,
-  OneContext,
-  // Thirdweb Integration Provider
-  OneThirdwebProvider,
   useThirdwebClient,
+  OneContext,
+  // Thirdweb utilities (re-exported for convenience)
   inAppWallet,
   smartWallet,
   base,
@@ -102,9 +101,18 @@ export {
   polygon,
   arbitrum,
   optimism,
+  // @deprecated - Use OneProvider instead
+  OneThirdwebProvider,
 } from './providers';
 
-export type { OneThirdwebConfig, OneThirdwebProviderProps } from './providers';
+export type {
+  ThirdwebAuthOptions,
+  ThirdwebWalletConfig,
+  Chain,
+  ThirdwebClient,
+  // @deprecated - Use ThirdwebWalletConfig instead
+  OneThirdwebConfig,
+} from './providers';
 
 // ===== UI Components (Wrapped Thirdweb) =====
 export {
@@ -158,6 +166,16 @@ export {
   OneForexConsoleView,
   OneForexPairSelector,
   OneForexTradeHistory,
+  // Trading Console Components
+  OneTradingConsole,
+  OneAIQuantConsole,
+  OneAgentConsole,
+  OnePositionDetail,
+  OneAgentCard,
+  OnePositionCard,
+  OneRiskIndicator,
+  OneMetricsDashboard,
+  OneDecisionTimeline,
 } from './components';
 
 export type {
@@ -194,6 +212,16 @@ export type {
   OneForexConsoleViewProps,
   OneForexPairSelectorProps,
   OneForexTradeHistoryProps,
+  // Trading Console Component Types
+  OneTradingConsoleProps,
+  OneAIQuantConsoleProps,
+  OneAgentConsoleProps,
+  OnePositionDetailProps,
+  OneAgentCardProps,
+  OnePositionCardProps,
+  OneRiskIndicatorProps,
+  OneMetricsDashboardProps,
+  OneDecisionTimelineProps,
 } from './components';
 
 // ===== Standalone Hooks (for use outside OneProvider) =====
@@ -210,6 +238,10 @@ export {
   useAITrading,
   setAITradingAccessToken,
   clearAITradingAccessToken,
+  // AI Agent Hooks
+  useAIAgents,
+  useAIAgent,
+  useAIAgentSubscription,
   // Forex Trading Hooks
   useForexPools,
   useForexInvestments,
@@ -219,6 +251,16 @@ export {
   setForexAccessToken,
   clearForexAccessToken,
   setForexEngineUrl,
+  // Trading Console Hooks
+  useTradingConsole,
+  useAIQuantConsole,
+  useBotSimulation,
+  useAIPositions,
+  useAIDecisions,
+  useAIRiskStatus,
+  setConsoleAccessToken,
+  clearConsoleAccessToken,
+  setConsoleEngineUrl,
 } from './hooks';
 
 export type {
@@ -230,12 +272,29 @@ export type {
   UseAIPortfolioResult,
   UseAIMarketDataResult,
   UseAITradingResult,
+  // AI Agent Hook Types
+  UseAIAgentsResult,
+  UseAIAgentResult,
+  UseAIAgentSubscriptionResult,
+  AIAgent as AIAgentHook,
+  AIAgentParams,
   // Forex Hook Types
   UseForexPoolsResult,
   UseForexInvestmentsResult,
   UseForexSimulationResult,
   UseForexPoolDataResult,
   UseForexTradingResult,
+  // Trading Console Hook Types
+  UseBotSimulationOptions,
+  UseBotSimulationResult,
+  UseAIPositionsOptions,
+  UseAIPositionsResult,
+  UseAIDecisionsOptions,
+  UseAIDecisionsResult,
+  UseAIRiskStatusOptions,
+  UseAIRiskStatusResult,
+  UseAIQuantConsoleResult,
+  UseTradingConsoleResult,
 } from './hooks';
 
 // ===== Utilities =====

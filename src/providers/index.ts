@@ -1,5 +1,11 @@
+// ONE SDK Unified Provider
+// All wallet functionality (including thirdweb) is integrated into OneProvider
+
 export {
+  // Main Provider
   OneProvider,
+
+  // Core Hooks
   useOne,
   useOneAuth,
   useOneWallet,
@@ -7,13 +13,12 @@ export {
   useOneSwap,
   useOneTrading,
   useOneEngine,
-  OneContext,
-} from './OneProvider';
-
-// Thirdweb Integration
-export {
-  OneThirdwebProvider,
   useThirdwebClient,
+
+  // Context
+  OneContext,
+
+  // Thirdweb utilities (re-exported for convenience)
   inAppWallet,
   smartWallet,
   base,
@@ -21,6 +26,15 @@ export {
   polygon,
   arbitrum,
   optimism,
-  type OneThirdwebConfig,
-  type OneThirdwebProviderProps,
-} from './ThirdwebProvider';
+
+  // Types
+  type ThirdwebAuthOptions,
+  type ThirdwebWalletConfig,
+  type Chain,
+  type ThirdwebClient,
+} from './OneProvider';
+
+// Legacy re-export for backwards compatibility
+// @deprecated Use OneProvider instead
+export { OneProvider as OneThirdwebProvider } from './OneProvider';
+export type { ThirdwebWalletConfig as OneThirdwebConfig } from './OneProvider';

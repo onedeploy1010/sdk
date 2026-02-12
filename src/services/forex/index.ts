@@ -11,11 +11,22 @@ export type { PairState } from './ForexSimulationEngine';
 export { ForexPoolDataGenerator } from './ForexPoolDataGenerator';
 
 // Bot Simulation Engine (AI crypto trading strategies)
-export { botSimulationEngine } from './BotSimulationEngine';
+export {
+  botSimulationEngine,
+  STRATEGY_PERSONALITIES,
+  INVESTMENT_TIERS,
+  INVESTMENT_CYCLES,
+  calculateDailyYield,
+  estimateReturns,
+} from './BotSimulationEngine';
 export type {
   BotLogType,
   BotLogEntry,
   IndicatorSnapshot,
   BotState,
   StrategyPersonality,
+  StrategyCategory,
+  InvestmentTier,
+  TierConfig,
+  CycleConfig,
 } from './BotSimulationEngine';

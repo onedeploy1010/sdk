@@ -50,6 +50,7 @@ export {
   forexSimulationEngine,
   ForexPoolDataGenerator,
   botSimulationEngine,
+  STRATEGY_PERSONALITIES,
 } from './forex';
 export type {
   PairState,

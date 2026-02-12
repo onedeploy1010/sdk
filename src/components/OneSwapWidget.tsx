@@ -5,7 +5,7 @@ import { useActiveAccount, useSendTransaction } from 'thirdweb/react';
 import { prepareTransaction } from 'thirdweb';
 import type { Chain } from 'thirdweb/chains';
 import { base, ethereum, polygon, arbitrum, optimism, bsc, avalanche } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 import { getEngineUrl } from '../config';
 
 // ===== Types =====
@@ -407,7 +407,7 @@ export function OneSwapWidget({
 
   // Execute swap
   const handleSwap = async () => {
-    if (!account || !fromToken || !toToken) return;
+    if (!client || !account || !fromToken || !toToken) return;
 
     setError(null);
 
@@ -437,7 +437,7 @@ export function OneSwapWidget({
           data: data.data.transaction.data,
           value: BigInt(data.data.transaction.value || 0),
           chain: fromChain.chain,
-          client,
+          client: client,
         });
 
         sendTransaction(tx, {
@@ -462,7 +462,7 @@ export function OneSwapWidget({
     }
   };
 
-  const canSwap = account && fromAmount && parseFloat(fromAmount) > 0 && !isPending && !isLoadingQuote;
+  const canSwap = client && account && fromAmount && parseFloat(fromAmount) > 0 && !isPending && !isLoadingQuote;
 
   // Theme colors
   const bgColor = isDark ? '#1f2937' : '#ffffff';

@@ -4,7 +4,7 @@ import React from 'react';
 import { TransactionButton, type TransactionButtonProps } from 'thirdweb/react';
 import { prepareTransaction, type PreparedTransaction } from 'thirdweb';
 import type { Chain } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 
 // ===== Types =====
 
@@ -72,14 +72,39 @@ export function OneTransactionButton({
 }: OneTransactionButtonProps) {
   const client = useThirdwebClient();
 
+  // Show loading state if client is not ready
+  if (!client && !preparedTx) {
+    return (
+      <button
+        disabled
+        className={className}
+        style={{ ...ONE_BUTTON_DISABLED_STYLE, ...style, opacity: 0.5 }}
+      >
+        Initializing...
+      </button>
+    );
+  }
+
   // Prepare transaction if not already provided
-  const transaction = preparedTx || prepareTransaction({
+  const transaction = preparedTx || (client ? prepareTransaction({
     to,
     value,
     data,
     chain,
     client,
-  });
+  }) : null);
+
+  if (!transaction) {
+    return (
+      <button
+        disabled
+        className={className}
+        style={{ ...ONE_BUTTON_DISABLED_STYLE, ...style, opacity: 0.5 }}
+      >
+        Initializing...
+      </button>
+    );
+  }
 
   const buttonStyle = disabled
     ? { ...ONE_BUTTON_DISABLED_STYLE, ...style }

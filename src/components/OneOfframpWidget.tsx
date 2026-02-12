@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount, useWalletBalance } from 'thirdweb/react';
 import { base } from 'thirdweb/chains';
-import { useThirdwebClient } from '../providers/ThirdwebProvider';
+import { useThirdwebClient } from '../providers';
 import { getEngineUrl } from '../config';
 
 // ===== Types =====
@@ -198,10 +198,11 @@ export function OneOfframpWidget({
 
   // Get balance for selected crypto
   const { data: balanceData } = useWalletBalance({
-    client,
+    client: client as any,
     chain: base,
     address: walletAddress,
-  });
+    enabled: !!client,
+  } as any);
 
   // Form state
   const [cryptoCurrency, setCryptoCurrency] = useState(defaultCrypto);
