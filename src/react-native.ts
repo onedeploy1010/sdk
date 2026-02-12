@@ -129,7 +129,22 @@ export type {
 // ===== Forex Services =====
 export { forexSimulationEngine } from './services/forex/ForexSimulationEngine';
 export { ForexPoolDataGenerator } from './services/forex/ForexPoolDataGenerator';
-export { botSimulationEngine } from './services/forex/BotSimulationEngine';
+export {
+  botSimulationEngine,
+  STRATEGY_PERSONALITIES,
+  INVESTMENT_TIERS,
+  INVESTMENT_CYCLES,
+} from './services/forex/BotSimulationEngine';
+
+// ===== Forex Types =====
+export type {
+  BotLogEntry,
+  BotState,
+  StrategyPersonality,
+  InvestmentTier,
+  CycleConfig,
+  TierConfig,
+} from './services/forex/BotSimulationEngine';
 
 // ===== React Native Specific Utilities =====
 
