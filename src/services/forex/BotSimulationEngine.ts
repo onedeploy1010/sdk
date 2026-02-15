@@ -730,12 +730,34 @@ class BotSimulationEngine {
   }
 
   emitBootSequence(): void {
+    // Pre-initialize all bot states immediately so UI shows correct count
+    for (const strategy of STRATEGY_PERSONALITIES) {
+      const pair = pick(strategy.preferredPairs);
+      const price = this.priceState.get(pair) || PAIR_PRICES[pair] || 50000;
+      const indicators = this.generateIndicators(strategy, price);
+      this.indicatorState.set(strategy.id, indicators);
+      this.botStates.set(strategy.id, {
+        strategyId: strategy.id,
+        strategyName: strategy.name,
+        isRunning: true, // Mark as running during boot
+        currentPair: pair,
+        currentPrice: price,
+        indicators,
+        openPositions: [],
+        totalPnl: 0,
+        totalTrades: 0,
+        winRate: 0.5,
+        lastSignal: 'HOLD',
+        lastSignalConfidence: 0,
+      });
+    }
+
     const bootMessages: Array<{ msg: string; delay: number }> = [
       { msg: 'Initializing ONE Trading Engine v3.2.1...', delay: 0 },
       { msg: 'Loading market data feeds...', delay: 500 },
       { msg: 'Connecting to exchange WebSocket streams...', delay: 1200 },
       { msg: 'Calibrating indicator engines (RSI, MACD, EMA, Bollinger)...', delay: 2000 },
-      { msg: 'Loading strategy personalities: balanced-01, conservative-01, aggressive-01', delay: 2800 },
+      { msg: `Loading ${STRATEGY_PERSONALITIES.length} strategy personalities...`, delay: 2800 },
       { msg: 'Risk management module initialized (max drawdown: 15%)', delay: 3600 },
       { msg: 'Portfolio allocation engine ready', delay: 4200 },
       { msg: '=== All systems online. Starting trading cycles ===', delay: 5000 },
